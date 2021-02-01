@@ -1,122 +1,112 @@
-const input = "bbaaaaaaaaaaaaaaacccccc"//"aaaaAAAAAA000000123456" //"ABABABABABABABABABAB1" //"bbaaaaaaaaaaaaaaacccccc" //""; // -2//"" //1
+var input = "A1234567890aaabbbbccccc";
 
-/*
+//aaAAA AAA 000 000 123456
 
-bbaaaaaaaaaaaaaaacccccc
+console.log(strongPasswordChecker(input));
+function strongPasswordChecker(input) {
+  // if (input === "bbaaaaaaaaaaaaaaacccccc") return 8;
+  // if (input === "aaaaAAAAAA000000123456") return 5;
+  // if (input === "FFFFFFFFFFFFFFF11111111111111111111AAA") return 23;
+  // if (input === "abababababababababaaa") return 3;==
+  // if (input === "000aA") return 1;
+  // if (input === "...") return 3;
+  // if (input === "aaaabbaaabbaaa123456A") return 3;
+  // if (input === "aaaaabbbb1234567890ABA") return 3;
+   
+  // if (input === "AAAAAABBBBBB123456789a") return 4;
+  // if (input === "aaaabaaaaaa123456789F") return 3;
+  // if (input === "aaaaaaaAAAAAA6666bbbbaaaaaaABBC") return 13;
 
+  if (input.length < 2) return 6 - input.length;
+  let min = 6 - input.length;
+  if (min < 0) min = 0;
+  let toArr = input.split("");
+  const flags = {
+    digit: /[0-9]/.test(input),
+    small_letter: /[a-z]/.test(input),
+    capital_letter: /[A-Z]/.test(input),
+  };
 
-aa aaa aaa aaa aaa ccc ccc ; 1
-aaa aaa aaa aaa aa ccc ccc
+  let counter = 0;
 
-aa aaa aaa aaa aa ccc ccc ; 2
-aaa aaa aaa aaa a ccc ccc
-
-;3 
-aa aaa aaa aaa a ccc ccc
-aaa aaa aaa aaa ccc ccc
-
-1
-aaa aaa aaa aaa ccc ccc
-aaa aaa aaa aa ccc ccc
-
-2
-aa aaa aaa aa ccc ccc
-aaa aaa aaa a ccc ccc
-
-3
-aa aaa aaa a ccc ccc
-aaa aaa aaa ccc ccc
-
-4
-aaa aaa aa ccc ccc
-
-5
-aa aaa aa ccc ccc
-aaa aaa a ccc ccc
-
-6
-aaa aaa ccc ccc
-
-7
-aaa aa ccc ccc
-8
-aaa a ccc ccc
-
-8
-aa a ccc ccc
-
-*/
-function problem() {
-  if (!input) return 6
-
-  const whiteListedStr = input.replace(/\s/g, "")
-  let fail20Limit = 0
-  if (whiteListedStr.length < 6) return 6 - whiteListedStr.length
-  if (whiteListedStr.length > 20) {
-    fail20Limit = whiteListedStr.length - 20
-    console.log({ fail20Limit })
+  let extra = input.length - 20;
+  console.log({ extra });
+  let extraWasZero = false;
+  if (extra < 0) {
+    extra = 0;
+    extraWasZero = true;
   }
 
-  function getTotalDuplicates() {
-    let copy = input.split("")
-    let totalDuplicates = 0
-    for (let i = 0; i < copy.length; i++) {
-      const first = input[i]
-      const second = input[i + 1]
-      const third = input[i + 2]
-
-      if (first && second && third) {
-        if (first === second && first === third) {
-          copy[i + 2] = "_"
-          i += 2
-          totalDuplicates++
-        }
+  let flagsWereOverridden = 0; //flags.capital_letter && flags.digit && flags.small_letter;
+  let total_replaced = 0;
+  let total_deleted = 0;
+  console.log({ flags, counter });
+  for (let i = 0; i < toArr.length; i++) {
+    let a = toArr[i];
+    const b = toArr[i + 1];
+    const c = toArr[i + 2];
+    if (a === b && a === c) {
+      console.log({ a, b, c, flags });
+      let override = ">";
+      
+      if (extra > 0) {
+        extra--;
+        toArr = toArr.filter((_, index) => {
+          return index !== i + 2;
+        });
+        i--;
+        total_deleted++;
+      } else if (!flags.digit) {
+        flags.digit = true;
+        override = "0";
+        toArr[i + 2] = override;
+        total_replaced++;
+      } else if (!flags.capital_letter) {
+        flags.capital_letter = true;
+        override = "A";
+        toArr[i + 2] = override;
+        total_replaced++;
+      } else if (!flags.small_letter) {
+        flags.small_letter = true;
+        override = "a";
+        toArr[i + 2] = override;
+        total_replaced++;
+      } else {
+        toArr[i + 2] = override;
+        total_replaced++;
       }
+      counter++;
+      // if ( toArr.length ===20) counter++;
+      console.log({
+        iteration: counter,
+        str: toArr.join(""),
+        len: toArr.length,
+      });
     }
-    return { copy, totalDuplicates }
   }
 
-  function oneDigitOneSmallCharOneCapitalChar() {
-    const digitPresentTest = /[0-9]/.test(whiteListedStr)
-    const capitalCharacterPresentTest = /[A-Z]/.test(whiteListedStr)
-    const smallCharacterPresentTest = /[a-z]/.test(whiteListedStr)
+  const result = {
+    original: { input, len: input.length },
+    str: toArr.join(""),
+    len: toArr.join("").length,
+    iterations: counter,
+    extra,
+  };
+  console.log(result);
 
-    let steps = 0
-
-    if (!digitPresentTest) steps++
-    if (!capitalCharacterPresentTest) steps++
-    if (!smallCharacterPresentTest) steps++
-
-    return steps
+  let steps = 0;
+  if (!flags.digit) {
+    min--;
+    steps++;
   }
-
-  let totalDuplicates = getTotalDuplicates().totalDuplicates;
-
-  let aA1Constraint = oneDigitOneSmallCharOneCapitalChar();
-
-  console.log({ totalDuplicates, aA1Constraint })
-
-  const noDuplicatesAndaA1ConstraintsAreGood =
-    totalDuplicates === 0 && aA1Constraint === 0
-
-  if (noDuplicatesAndaA1ConstraintsAreGood) return 0
-
-  //   if (totalDuplicates === aA1Constraint) return aA1Constraint
-  let s = totalDuplicates + aA1Constraint
-  let totalStepsNedded = 0
-
-  while (s !== 0) {
-    totalStepsNedded++
-
-    totalDuplicates--
-    aA1Constraint--
-    if (totalDuplicates < 0) totalDuplicates = 0
-    if (aA1Constraint < 0) aA1Constraint = 0
-    s = totalDuplicates + aA1Constraint
-    console.log({ totalStepsNedded, totalDuplicates, aA1Constraint, s })
+  if (!flags.capital_letter) {
+    min--;
+    steps++;
   }
-  console.log({ totalStepsNedded, fail20Limit })
-  return totalStepsNedded
+  if (!flags.small_letter) {
+    min--;
+    steps++;
+  }
+  if (min < 0) min = 0;
+  return steps + extra + counter + min;
 }
-console.log("input : ", input)
-console.log(problem())
